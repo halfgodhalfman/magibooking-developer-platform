@@ -1,0 +1,4331 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "MagiBooking Cloud Developer API",
+    "version": "0.2.0-preview.1",
+    "description": "Reviewed against the private cloud candidate HNQKqRQTJCSHFKMMsk5Nx. Preview operations are not deployed to production. Merchant-created direct bearer credentials; OAuth is not available yet. Every call checks current merchant/location authorization, subscription and quota. Catalog is merchant-shared, at most 100 items without pagination. Catalog writes require explicit merchant-wide opt-in; payment policy fields additionally require merchant:payment-rules:write. All write bodies are limited to 16384 bytes. No arbitrary email/SMS sending or agent-declared payment success."
+  },
+  "servers": [
+    {
+      "url": "https://www.magibooking.com",
+      "description": "Production: use only operations marked production; base appointment creation is available but paid preview is not."
+    }
+  ],
+  "paths": {
+    "/api/developer/v1/merchants/{merchantId}/services/": {
+      "get": {
+        "operationId": "services",
+        "summary": "services",
+        "x-required-scope": "catalog:read",
+        "x-release-status": "production",
+        "security": [
+          {
+            "merchantBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid input or missing idempotency key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or revoked credential",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scope, role, subscription or entitlement denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource or location not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Policy, payment or schedule conflict; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Version conflict; fetch current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 16384 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "JSON required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Persistent quota exhausted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Developer API disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success; see asynchronous state and release status",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Present for appointment/catalog object responses"
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "maxItems": 100,
+                      "items": {
+                        "$ref": "#/components/schemas/Service"
+                      }
+                    },
+                    "location_id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "location_id"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createService",
+        "summary": "createService",
+        "x-required-scope": "merchant:services:write",
+        "x-release-status": "staging-preview",
+        "security": [
+          {
+            "merchantBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            },
+            "description": "Keep the same key and exact body/version when retrying the same operation. No automatic SDK write retries."
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid input or missing idempotency key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or revoked credential",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scope, role, subscription or entitlement denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource or location not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Policy, payment or schedule conflict; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Version conflict; fetch current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 16384 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "JSON required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Persistent quota exhausted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Developer API disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Success; see asynchronous state and release status",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Present for appointment/catalog object responses"
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ServiceWrite"
+                  },
+                  {
+                    "required": [
+                      "name",
+                      "price",
+                      "duration_minutes"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/developer/v1/merchants/{merchantId}/staff/": {
+      "get": {
+        "operationId": "staff",
+        "summary": "staff",
+        "x-required-scope": "catalog:read",
+        "x-release-status": "production",
+        "security": [
+          {
+            "merchantBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid input or missing idempotency key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or revoked credential",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scope, role, subscription or entitlement denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource or location not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Policy, payment or schedule conflict; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Version conflict; fetch current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 16384 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "JSON required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Persistent quota exhausted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Developer API disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success; see asynchronous state and release status",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Present for appointment/catalog object responses"
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "maxItems": 100,
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "updated_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "name",
+                          "title",
+                          "updated_at"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "location_id": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "data",
+                    "location_id"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createStaff",
+        "summary": "createStaff",
+        "x-required-scope": "merchant:staff:write",
+        "x-release-status": "staging-preview",
+        "security": [
+          {
+            "merchantBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            },
+            "description": "Keep the same key and exact body/version when retrying the same operation. No automatic SDK write retries."
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid input or missing idempotency key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or revoked credential",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scope, role, subscription or entitlement denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource or location not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Policy, payment or schedule conflict; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Version conflict; fetch current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 16384 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "JSON required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Persistent quota exhausted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Developer API disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Success; see asynchronous state and release status",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Present for appointment/catalog object responses"
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/StaffWrite"
+                  },
+                  {
+                    "required": [
+                      "name"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/developer/v1/merchants/{merchantId}/availability/": {
+      "get": {
+        "operationId": "availability",
+        "summary": "availability",
+        "x-required-scope": "availability:read",
+        "x-release-status": "production",
+        "security": [
+          {
+            "merchantBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "date"
+            }
+          },
+          {
+            "name": "service_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          {
+            "name": "staff_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid input or missing idempotency key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or revoked credential",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scope, role, subscription or entitlement denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource or location not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Policy, payment or schedule conflict; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Version conflict; fetch current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 16384 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "JSON required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Persistent quota exhausted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Developer API disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success; see asynchronous state and release status",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Present for appointment/catalog object responses"
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "location_id": {
+                      "type": "string"
+                    },
+                    "timezone": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "start_at": {
+                            "type": "string",
+                            "format": "date-time"
+                          },
+                          "staff_id": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "start_at",
+                          "staff_id"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "reasons": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "location_id",
+                    "timezone",
+                    "data",
+                    "reasons"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/developer/v1/merchants/{merchantId}/appointments/": {
+      "post": {
+        "operationId": "createAppointment",
+        "summary": "createAppointment",
+        "x-required-scope": "appointments:create",
+        "x-release-status": "staging-preview",
+        "security": [
+          {
+            "merchantBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            },
+            "description": "Keep the same key and exact body/version when retrying the same operation. No automatic SDK write retries."
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid input or missing idempotency key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or revoked credential",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scope, role, subscription or entitlement denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource or location not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Policy, payment or schedule conflict; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Version conflict; fetch current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 16384 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "JSON required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Persistent quota exhausted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Developer API disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Success; see asynchronous state and release status",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Present for appointment/catalog object responses"
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAppointment"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/developer/v1/merchants/{merchantId}/appointments/{appointmentId}/": {
+      "get": {
+        "operationId": "appointment",
+        "summary": "appointment",
+        "x-required-scope": "appointments:read",
+        "x-release-status": "production",
+        "security": [
+          {
+            "merchantBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          {
+            "name": "appointmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid input or missing idempotency key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or revoked credential",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scope, role, subscription or entitlement denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource or location not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Policy, payment or schedule conflict; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Version conflict; fetch current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 16384 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "JSON required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Persistent quota exhausted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Developer API disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success; see asynchronous state and release status",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Present for appointment/catalog object responses"
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/developer/v1/merchants/{merchantId}/appointments/{appointmentId}/reschedule/": {
+      "post": {
+        "operationId": "rescheduleAppointment",
+        "summary": "rescheduleAppointment",
+        "x-required-scope": "appointments:reschedule",
+        "x-release-status": "staging-preview",
+        "security": [
+          {
+            "merchantBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          {
+            "name": "appointmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            },
+            "description": "Keep the same key and exact body/version when retrying the same operation. No automatic SDK write retries."
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Quoted updated_at value, e.g. \"2026-10-28T12:00:00.000Z\". Obtain from read/create response; stale versions return 412."
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid input or missing idempotency key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or revoked credential",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scope, role, subscription or entitlement denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource or location not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Policy, payment or schedule conflict; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Version conflict; fetch current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 16384 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "JSON required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Persistent quota exhausted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Developer API disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success; see asynchronous state and release status",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Present for appointment/catalog object responses"
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "start_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "staff_id": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_-]+$"
+                  }
+                },
+                "required": [
+                  "start_at",
+                  "staff_id"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/developer/v1/merchants/{merchantId}/appointments/{appointmentId}/cancel/": {
+      "post": {
+        "operationId": "cancelAppointment",
+        "summary": "cancelAppointment",
+        "x-required-scope": "appointments:cancel",
+        "x-release-status": "staging-preview",
+        "security": [
+          {
+            "merchantBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          {
+            "name": "appointmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            },
+            "description": "Keep the same key and exact body/version when retrying the same operation. No automatic SDK write retries."
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Quoted updated_at value, e.g. \"2026-10-28T12:00:00.000Z\". Obtain from read/create response; stale versions return 412."
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid input or missing idempotency key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or revoked credential",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scope, role, subscription or entitlement denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource or location not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Policy, payment or schedule conflict; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Version conflict; fetch current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 16384 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "JSON required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Persistent quota exhausted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Developer API disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success; see asynchronous state and release status",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Present for appointment/catalog object responses"
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppointmentResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "reason": {
+                    "type": "string"
+                  }
+                },
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/developer/v1/merchants/{merchantId}/appointments/{appointmentId}/payments/": {
+      "get": {
+        "operationId": "payments",
+        "summary": "payments",
+        "x-required-scope": "payments:read",
+        "x-release-status": "staging-preview",
+        "security": [
+          {
+            "merchantBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          {
+            "name": "appointmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid input or missing idempotency key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or revoked credential",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scope, role, subscription or entitlement denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource or location not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Policy, payment or schedule conflict; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Version conflict; fetch current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 16384 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "JSON required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Persistent quota exhausted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Developer API disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success; see asynchronous state and release status",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Present for appointment/catalog object responses"
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/developer/v1/merchants/{merchantId}/appointments/{appointmentId}/checkout/": {
+      "post": {
+        "operationId": "checkout",
+        "summary": "checkout",
+        "x-required-scope": "payments:create",
+        "x-release-status": "staging-preview",
+        "security": [
+          {
+            "merchantBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          {
+            "name": "appointmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            },
+            "description": "Keep the same key and exact body/version when retrying the same operation. No automatic SDK write retries."
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid input or missing idempotency key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or revoked credential",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scope, role, subscription or entitlement denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource or location not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Policy, payment or schedule conflict; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Version conflict; fetch current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 16384 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "JSON required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Persistent quota exhausted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Developer API disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Success; see asynchronous state and release status",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Present for appointment/catalog object responses"
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EffectResponse"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success; see asynchronous state and release status",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Present for appointment/catalog object responses"
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EffectResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/developer/v1/merchants/{merchantId}/appointments/{appointmentId}/reminders/": {
+      "get": {
+        "operationId": "reminders",
+        "summary": "reminders",
+        "x-required-scope": "appointments:read",
+        "x-release-status": "staging-preview",
+        "security": [
+          {
+            "merchantBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          {
+            "name": "appointmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid input or missing idempotency key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or revoked credential",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scope, role, subscription or entitlement denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource or location not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Policy, payment or schedule conflict; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Version conflict; fetch current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 16384 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "JSON required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Persistent quota exhausted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Developer API disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success; see asynchronous state and release status",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Present for appointment/catalog object responses"
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "maxItems": 100,
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "EMAIL",
+                              "SMS"
+                            ]
+                          },
+                          "status": {
+                            "type": "string"
+                          },
+                          "attempts": {
+                            "type": "integer"
+                          },
+                          "errorCode": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          },
+                          "nextAttemptAt": {
+                            "type": [
+                              "string",
+                              "null"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "kind",
+                          "status",
+                          "attempts",
+                          "errorCode",
+                          "nextAttemptAt"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "sendReminder",
+        "summary": "sendReminder",
+        "x-required-scope": "reminders:send",
+        "x-release-status": "staging-preview",
+        "security": [
+          {
+            "merchantBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          {
+            "name": "appointmentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            },
+            "description": "Keep the same key and exact body/version when retrying the same operation. No automatic SDK write retries."
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid input or missing idempotency key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or revoked credential",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scope, role, subscription or entitlement denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource or location not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Policy, payment or schedule conflict; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Version conflict; fetch current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 16384 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "JSON required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Persistent quota exhausted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Developer API disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Success; see asynchronous state and release status",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Present for appointment/catalog object responses"
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EffectResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "channel": {
+                    "type": "string",
+                    "enum": [
+                      "email",
+                      "sms"
+                    ]
+                  }
+                },
+                "required": [
+                  "channel"
+                ],
+                "additionalProperties": false
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/developer/v1/merchants/{merchantId}/payments/setup/": {
+      "get": {
+        "operationId": "paymentSetup",
+        "summary": "paymentSetup",
+        "x-required-scope": "payments:read",
+        "x-release-status": "staging-preview",
+        "security": [
+          {
+            "merchantBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid input or missing idempotency key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or revoked credential",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scope, role, subscription or entitlement denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource or location not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Policy, payment or schedule conflict; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Version conflict; fetch current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 16384 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "JSON required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Persistent quota exhausted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Developer API disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success; see asynchronous state and release status",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Present for appointment/catalog object responses"
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "merchant_setup_url": {
+                      "type": "string",
+                      "format": "uri"
+                    }
+                  },
+                  "required": [
+                    "merchant_setup_url"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/developer/v1/merchants/{merchantId}/services/{serviceId}/": {
+      "patch": {
+        "operationId": "updateService",
+        "summary": "updateService",
+        "x-required-scope": "merchant:services:write",
+        "x-release-status": "staging-preview",
+        "security": [
+          {
+            "merchantBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          {
+            "name": "serviceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            },
+            "description": "Keep the same key and exact body/version when retrying the same operation. No automatic SDK write retries."
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Quoted updated_at value, e.g. \"2026-10-28T12:00:00.000Z\". Obtain from read/create response; stale versions return 412."
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid input or missing idempotency key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or revoked credential",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scope, role, subscription or entitlement denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource or location not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Policy, payment or schedule conflict; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Version conflict; fetch current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 16384 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "JSON required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Persistent quota exhausted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Developer API disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success; see asynchronous state and release status",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Present for appointment/catalog object responses"
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServiceResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ServiceWrite"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/developer/v1/merchants/{merchantId}/staff/{staffId}/": {
+      "patch": {
+        "operationId": "updateStaff",
+        "summary": "updateStaff",
+        "x-required-scope": "merchant:staff:write",
+        "x-release-status": "staging-preview",
+        "security": [
+          {
+            "merchantBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "merchantId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          {
+            "name": "staffId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{16,128}$"
+            },
+            "description": "Keep the same key and exact body/version when retrying the same operation. No automatic SDK write retries."
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Quoted updated_at value, e.g. \"2026-10-28T12:00:00.000Z\". Obtain from read/create response; stale versions return 412."
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "Invalid input or missing idempotency key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or revoked credential",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Scope, role, subscription or entitlement denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Resource or location not accessible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Policy, payment or schedule conflict; inspect error.code",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Version conflict; fetch current state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "Body exceeds 16384 bytes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "JSON required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match required",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Persistent quota exhausted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Developer API disabled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          },
+          "200": {
+            "description": "Success; see asynchronous state and release status",
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Present for appointment/catalog object responses"
+              },
+              "Idempotency-Replayed": {
+                "schema": {
+                  "type": "string",
+                  "enum": [
+                    "true"
+                  ]
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StaffResponse"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StaffWrite"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "merchantBearer": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Keep merchant-issued token server-side; one explicit merchant/location grant. Not OAuth."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "request_id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "code",
+              "request_id"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "additionalProperties": false
+      },
+      "Appointment": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+$"
+          },
+          "appointment_number": {
+            "type": "string"
+          },
+          "location_id": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "payment_status": {
+            "type": "string"
+          },
+          "start_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "end_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "appointment_number",
+          "location_id",
+          "status",
+          "start_at",
+          "end_at",
+          "updated_at"
+        ],
+        "additionalProperties": false
+      },
+      "AppointmentResponse": {
+        "type": "object",
+        "properties": {
+          "appointment": {
+            "$ref": "#/components/schemas/Appointment"
+          },
+          "payment": {
+            "type": "object",
+            "properties": {
+              "effect_id": {
+                "type": "string"
+              },
+              "state": {
+                "type": "string"
+              },
+              "status_url": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "effect_id",
+              "state",
+              "status_url"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "appointment"
+        ],
+        "additionalProperties": false
+      },
+      "Service": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "price": {
+            "type": "string",
+            "pattern": "^\\d{1,8}(\\.\\d{1,2})?$"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "duration_minutes": {
+            "type": "integer"
+          },
+          "payment_mode": {
+            "type": "string",
+            "enum": [
+              "BOOK_ONLY",
+              "FULL_PAYMENT",
+              "DEPOSIT_FIXED",
+              "DEPOSIT_PERCENT"
+            ]
+          },
+          "deposit_amount": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "deposit_percent": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "price",
+          "currency",
+          "duration_minutes",
+          "payment_mode",
+          "deposit_amount",
+          "deposit_percent",
+          "updated_at"
+        ],
+        "additionalProperties": false
+      },
+      "ServiceWrite": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "price": {
+            "type": "string",
+            "pattern": "^\\d{1,8}(\\.\\d{1,2})?$"
+          },
+          "duration_minutes": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 1440
+          },
+          "buffer_before_minutes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1440
+          },
+          "buffer_after_minutes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1440
+          },
+          "allow_online_booking": {
+            "type": "boolean"
+          },
+          "payment_mode": {
+            "type": "string",
+            "enum": [
+              "BOOK_ONLY",
+              "FULL_PAYMENT",
+              "DEPOSIT_FIXED",
+              "DEPOSIT_PERCENT"
+            ]
+          },
+          "deposit_amount": {
+            "type": "string",
+            "pattern": "^\\d{1,8}(\\.\\d{1,2})?$"
+          },
+          "deposit_percent": {
+            "type": "string",
+            "pattern": "^\\d{1,8}(\\.\\d{1,2})?$"
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "StaffWrite": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "maxLength": 120
+          },
+          "allow_client_booking": {
+            "type": "boolean"
+          },
+          "service_ids": {
+            "type": "array",
+            "maxItems": 100,
+            "items": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$"
+            }
+          },
+          "schedules": {
+            "type": "array",
+            "maxItems": 7,
+            "items": {
+              "type": "object",
+              "properties": {
+                "weekday": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 6
+                },
+                "start_time": {
+                  "type": "string",
+                  "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                },
+                "end_time": {
+                  "type": "string",
+                  "pattern": "^([01]\\d|2[0-3]):[0-5]\\d$"
+                }
+              },
+              "required": [
+                "weekday",
+                "start_time",
+                "end_time"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [],
+        "additionalProperties": false
+      },
+      "ServiceResponse": {
+        "type": "object",
+        "properties": {
+          "service": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]+$"
+              },
+              "name": {
+                "type": "string"
+              },
+              "price": {
+                "type": "string",
+                "pattern": "^\\d{1,8}(\\.\\d{1,2})?$"
+              },
+              "currency": {
+                "type": "string"
+              },
+              "duration_minutes": {
+                "type": "integer"
+              },
+              "payment_mode": {
+                "type": "string",
+                "enum": [
+                  "BOOK_ONLY",
+                  "FULL_PAYMENT",
+                  "DEPOSIT_FIXED",
+                  "DEPOSIT_PERCENT"
+                ]
+              },
+              "deposit_amount": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "deposit_percent": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "updated_at": {
+                "type": "string",
+                "format": "date-time"
+              },
+              "allow_online_booking": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "price",
+              "currency",
+              "duration_minutes",
+              "payment_mode",
+              "deposit_amount",
+              "deposit_percent",
+              "updated_at",
+              "allow_online_booking"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "service"
+        ],
+        "additionalProperties": false
+      },
+      "StaffResponse": {
+        "type": "object",
+        "properties": {
+          "staff": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_-]+$"
+              },
+              "name": {
+                "type": "string"
+              },
+              "title": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "allow_client_booking": {
+                "type": "boolean"
+              },
+              "updated_at": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "title",
+              "allow_client_booking",
+              "updated_at"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "staff"
+        ],
+        "additionalProperties": false
+      },
+      "EffectResponse": {
+        "type": "object",
+        "properties": {
+          "effect": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id",
+                  "status"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        },
+        "required": [
+          "effect"
+        ],
+        "additionalProperties": false
+      },
+      "PaymentResponse": {
+        "type": "object",
+        "properties": {
+          "amount": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "currency": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "payment_status": {
+            "type": "string"
+          },
+          "checkout_state": {
+            "type": "string"
+          },
+          "checkout_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "expires_at": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "merchant_setup_url": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": [
+          "amount",
+          "currency",
+          "payment_status",
+          "checkout_state",
+          "checkout_url",
+          "expires_at",
+          "merchant_setup_url"
+        ],
+        "additionalProperties": false
+      },
+      "CreateAppointment": {
+        "type": "object",
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+$"
+          },
+          "new_client": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 120
+              },
+              "phone": {
+                "type": "string",
+                "maxLength": 50
+              },
+              "email": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "name",
+              "phone"
+            ],
+            "additionalProperties": false
+          },
+          "service_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+$"
+          },
+          "staff_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+$"
+          },
+          "location_id": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]+$"
+          },
+          "start_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "service_id",
+          "staff_id",
+          "start_at"
+        ],
+        "additionalProperties": false,
+        "oneOf": [
+          {
+            "required": [
+              "client_id"
+            ],
+            "not": {
+              "required": [
+                "new_client"
+              ]
+            }
+          },
+          {
+            "required": [
+              "new_client"
+            ],
+            "not": {
+              "required": [
+                "client_id"
+              ]
+            }
+          }
+        ]
+      },
+      "AppointmentCreatedEvent": {
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "created_at",
+          "merchant_id",
+          "location_id",
+          "data"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "appointment.created",
+              "appointment.rescheduled",
+              "appointment.cancelled",
+              "payment.succeeded",
+              "payment.failed"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "merchant_id": {
+            "type": "string"
+          },
+          "location_id": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "required": [
+              "appointment"
+            ],
+            "properties": {
+              "appointment": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "status",
+                  "start_at",
+                  "end_at"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "start_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "end_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {
+    "appointment.created": {
+      "post": {
+        "summary": "Appointment created through the shared appointment creation service",
+        "description": "Verify HMAC-SHA256 of timestamp + '.' + exact request bytes using the endpoint signing secret. Header signature format v1=<hex>; reject timestamps outside five minutes. Retry payload bytes and event/delivery IDs remain stable; request timestamps are refreshed.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Event-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Delivery-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Timestamp",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Signature",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppointmentCreatedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Durably received; duplicate event IDs must also be safely acknowledged."
+          },
+          "default": {
+            "description": "Non-2xx, network errors and timeouts are retried up to 8 attempts. Redirects are never followed."
+          }
+        }
+      }
+    },
+    "appointment.rescheduled": {
+      "post": {
+        "summary": "appointment.rescheduled (staging preview)",
+        "description": "Verify HMAC-SHA256 of timestamp + '.' + exact request bytes using the endpoint signing secret. Header signature format v1=<hex>; reject timestamps outside five minutes. Retry payload bytes and event/delivery IDs remain stable; request timestamps are refreshed.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Event-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Delivery-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Timestamp",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Signature",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppointmentCreatedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Durably received; duplicate event IDs must also be safely acknowledged."
+          },
+          "default": {
+            "description": "Non-2xx, network errors and timeouts are retried up to 8 attempts. Redirects are never followed."
+          }
+        }
+      }
+    },
+    "appointment.cancelled": {
+      "post": {
+        "summary": "appointment.cancelled (staging preview)",
+        "description": "Verify HMAC-SHA256 of timestamp + '.' + exact request bytes using the endpoint signing secret. Header signature format v1=<hex>; reject timestamps outside five minutes. Retry payload bytes and event/delivery IDs remain stable; request timestamps are refreshed.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Event-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Delivery-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Timestamp",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Signature",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppointmentCreatedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Durably received; duplicate event IDs must also be safely acknowledged."
+          },
+          "default": {
+            "description": "Non-2xx, network errors and timeouts are retried up to 8 attempts. Redirects are never followed."
+          }
+        }
+      }
+    },
+    "payment.succeeded": {
+      "post": {
+        "summary": "payment.succeeded (staging preview)",
+        "description": "Verify HMAC-SHA256 of timestamp + '.' + exact request bytes using the endpoint signing secret. Header signature format v1=<hex>; reject timestamps outside five minutes. Retry payload bytes and event/delivery IDs remain stable; request timestamps are refreshed.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Event-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Delivery-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Timestamp",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Signature",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppointmentCreatedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Durably received; duplicate event IDs must also be safely acknowledged."
+          },
+          "default": {
+            "description": "Non-2xx, network errors and timeouts are retried up to 8 attempts. Redirects are never followed."
+          }
+        }
+      }
+    },
+    "payment.failed": {
+      "post": {
+        "summary": "payment.failed (staging preview)",
+        "description": "Verify HMAC-SHA256 of timestamp + '.' + exact request bytes using the endpoint signing secret. Header signature format v1=<hex>; reject timestamps outside five minutes. Retry payload bytes and event/delivery IDs remain stable; request timestamps are refreshed.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Event-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Delivery-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Timestamp",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Signature",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppointmentCreatedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Durably received; duplicate event IDs must also be safely acknowledged."
+          },
+          "default": {
+            "description": "Non-2xx, network errors and timeouts are retried up to 8 attempts. Redirects are never followed."
+          }
+        }
+      }
+    }
+  }
+}

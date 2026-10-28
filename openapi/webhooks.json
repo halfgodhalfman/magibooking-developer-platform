@@ -1,0 +1,374 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "MagiBooking Appointment Webhooks",
+    "version": "0.2.0-preview.1",
+    "description": "appointment.created is production; other events are staging preview. At-least-once, unordered delivery. Verify exact bytes and durably deduplicate by event ID."
+  },
+  "webhooks": {
+    "appointment.created": {
+      "post": {
+        "summary": "Appointment created through the shared appointment creation service",
+        "description": "Verify HMAC-SHA256 of timestamp + '.' + exact request bytes using the endpoint signing secret. Header signature format v1=<hex>; reject timestamps outside five minutes. Retry payload bytes and event/delivery IDs remain stable; request timestamps are refreshed.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Event-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Delivery-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Timestamp",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Signature",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppointmentCreatedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Durably received; duplicate event IDs must also be safely acknowledged."
+          },
+          "default": {
+            "description": "Non-2xx, network errors and timeouts are retried up to 8 attempts. Redirects are never followed."
+          }
+        }
+      }
+    },
+    "appointment.rescheduled": {
+      "post": {
+        "summary": "appointment.rescheduled (staging preview)",
+        "description": "Verify HMAC-SHA256 of timestamp + '.' + exact request bytes using the endpoint signing secret. Header signature format v1=<hex>; reject timestamps outside five minutes. Retry payload bytes and event/delivery IDs remain stable; request timestamps are refreshed.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Event-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Delivery-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Timestamp",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Signature",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppointmentCreatedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Durably received; duplicate event IDs must also be safely acknowledged."
+          },
+          "default": {
+            "description": "Non-2xx, network errors and timeouts are retried up to 8 attempts. Redirects are never followed."
+          }
+        }
+      }
+    },
+    "appointment.cancelled": {
+      "post": {
+        "summary": "appointment.cancelled (staging preview)",
+        "description": "Verify HMAC-SHA256 of timestamp + '.' + exact request bytes using the endpoint signing secret. Header signature format v1=<hex>; reject timestamps outside five minutes. Retry payload bytes and event/delivery IDs remain stable; request timestamps are refreshed.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Event-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Delivery-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Timestamp",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Signature",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppointmentCreatedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Durably received; duplicate event IDs must also be safely acknowledged."
+          },
+          "default": {
+            "description": "Non-2xx, network errors and timeouts are retried up to 8 attempts. Redirects are never followed."
+          }
+        }
+      }
+    },
+    "payment.succeeded": {
+      "post": {
+        "summary": "payment.succeeded (staging preview)",
+        "description": "Verify HMAC-SHA256 of timestamp + '.' + exact request bytes using the endpoint signing secret. Header signature format v1=<hex>; reject timestamps outside five minutes. Retry payload bytes and event/delivery IDs remain stable; request timestamps are refreshed.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Event-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Delivery-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Timestamp",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Signature",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppointmentCreatedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Durably received; duplicate event IDs must also be safely acknowledged."
+          },
+          "default": {
+            "description": "Non-2xx, network errors and timeouts are retried up to 8 attempts. Redirects are never followed."
+          }
+        }
+      }
+    },
+    "payment.failed": {
+      "post": {
+        "summary": "payment.failed (staging preview)",
+        "description": "Verify HMAC-SHA256 of timestamp + '.' + exact request bytes using the endpoint signing secret. Header signature format v1=<hex>; reject timestamps outside five minutes. Retry payload bytes and event/delivery IDs remain stable; request timestamps are refreshed.",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Event-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Delivery-Id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Timestamp",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-MagiBooking-Signature",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppointmentCreatedEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Durably received; duplicate event IDs must also be safely acknowledged."
+          },
+          "default": {
+            "description": "Non-2xx, network errors and timeouts are retried up to 8 attempts. Redirects are never followed."
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AppointmentCreatedEvent": {
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "created_at",
+          "merchant_id",
+          "location_id",
+          "data"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "appointment.created",
+              "appointment.rescheduled",
+              "appointment.cancelled",
+              "payment.succeeded",
+              "payment.failed"
+            ]
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "merchant_id": {
+            "type": "string"
+          },
+          "location_id": {
+            "type": "string"
+          },
+          "data": {
+            "type": "object",
+            "required": [
+              "appointment"
+            ],
+            "properties": {
+              "appointment": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "status",
+                  "start_at",
+                  "end_at"
+                ],
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "status": {
+                    "type": "string"
+                  },
+                  "start_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "end_at": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+name: integration-packages
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install -r tests/requirements.txt
+      - run: npm run check
+      - run: SDK_CAPTURE_DIR=.stage3-audit/captures npm test
+      - run: python scripts/validate-contract.py .stage3-audit/captures
+      - run: npm run contract:build && git diff --exit-code -- openapi/cloud.openapi.json
+      - run: npm pack ./packages/javascript --dry-run && npm pack ./packages/embed --dry-run
+      - run: python -m build packages/python --outdir dist/python

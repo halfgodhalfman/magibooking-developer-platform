@@ -1,0 +1,1 @@
+{"name":"@magibooking/embed","version":"0.2.0-preview.1","type":"module","license":"MIT","exports":"./index.mjs","files":["index.mjs","README.md","LICENSE"],"publishConfig":{"access":"public"}}
