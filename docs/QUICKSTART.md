@@ -1,6 +1,6 @@
 # Cloud API quickstart
 
-This SDK is a preview. Merchant-created bearer credentials are available to approved merchants with developer entitlements. Third-party OAuth and MCP are not implemented. Never use the local sandbox token against cloud services.
+This SDK is a preview. Merchant-created bearer credentials are available to approved merchants with developer entitlements. Third-party OAuth and MCP have a separate staging preview; see [OAuth/MCP](OAUTH-MCP.md). Production continues to use approved merchant-created credentials. Never use the local sandbox token against cloud services.
 
 Obtain the merchant ID and location-specific credential in the merchant developer console. The merchant must authorize the requested scopes. API subscriptions, roles, location access and quota are checked on every request, including retries. Catalog settings are shared across the merchant; writing services/staff requires separate merchant-wide consent. Payment-rule fields additionally require `merchant:payment-rules:write`.
 

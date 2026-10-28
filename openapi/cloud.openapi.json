@@ -2,8 +2,8 @@
   "openapi": "3.1.0",
   "info": {
     "title": "MagiBooking Cloud Developer API",
-    "version": "0.2.0-preview.1",
-    "description": "Reviewed against the private cloud candidate HNQKqRQTJCSHFKMMsk5Nx. Preview operations are not deployed to production. Merchant-created direct bearer credentials; OAuth is not available yet. Every call checks current merchant/location authorization, subscription and quota. Catalog is merchant-shared, at most 100 items without pagination. Catalog writes require explicit merchant-wide opt-in; payment policy fields additionally require merchant:payment-rules:write. All write bodies are limited to 16384 bytes. No arbitrary email/SMS sending or agent-declared payment success."
+    "version": "0.3.0-preview.1",
+    "description": "Reviewed against the 2026-10-28 private cloud OAuth/MCP staging candidate. Preview operations are not deployed to production. Merchant-created direct bearer credentials; OAuth authorization-code with mandatory S256 PKCE is a separate staging preview; production remains direct bearer only. Every call checks current merchant/location authorization, subscription and quota. Catalog is merchant-shared, at most 100 items without pagination. Catalog writes require explicit merchant-wide opt-in; payment policy fields additionally require merchant:payment-rules:write. All write bodies are limited to 16384 bytes. No arbitrary email/SMS sending or agent-declared payment success."
   },
   "servers": [
     {
@@ -21,6 +21,11 @@
         "security": [
           {
             "merchantBearer": []
+          },
+          {
+            "developerOAuth": [
+              "catalog:read"
+            ]
           }
         ],
         "parameters": [
@@ -203,7 +208,8 @@
               }
             }
           }
-        }
+        },
+        "x-oauth-release-status": "staging-preview"
       },
       "post": {
         "operationId": "createService",
@@ -213,6 +219,11 @@
         "security": [
           {
             "merchantBearer": []
+          },
+          {
+            "developerOAuth": [
+              "merchant:services:write"
+            ]
           }
         ],
         "parameters": [
@@ -409,7 +420,8 @@
               }
             }
           }
-        }
+        },
+        "x-oauth-release-status": "staging-preview"
       }
     },
     "/api/developer/v1/merchants/{merchantId}/staff/": {
@@ -421,6 +433,11 @@
         "security": [
           {
             "merchantBearer": []
+          },
+          {
+            "developerOAuth": [
+              "catalog:read"
+            ]
           }
         ],
         "parameters": [
@@ -628,7 +645,8 @@
               }
             }
           }
-        }
+        },
+        "x-oauth-release-status": "staging-preview"
       },
       "post": {
         "operationId": "createStaff",
@@ -638,6 +656,11 @@
         "security": [
           {
             "merchantBearer": []
+          },
+          {
+            "developerOAuth": [
+              "merchant:staff:write"
+            ]
           }
         ],
         "parameters": [
@@ -832,7 +855,8 @@
               }
             }
           }
-        }
+        },
+        "x-oauth-release-status": "staging-preview"
       }
     },
     "/api/developer/v1/merchants/{merchantId}/availability/": {
@@ -844,6 +868,11 @@
         "security": [
           {
             "merchantBearer": []
+          },
+          {
+            "developerOAuth": [
+              "availability:read"
+            ]
           }
         ],
         "parameters": [
@@ -1077,7 +1106,8 @@
               }
             }
           }
-        }
+        },
+        "x-oauth-release-status": "staging-preview"
       }
     },
     "/api/developer/v1/merchants/{merchantId}/appointments/": {
@@ -1089,6 +1119,11 @@
         "security": [
           {
             "merchantBearer": []
+          },
+          {
+            "developerOAuth": [
+              "appointments:create"
+            ]
           }
         ],
         "parameters": [
@@ -1274,7 +1309,8 @@
               }
             }
           }
-        }
+        },
+        "x-oauth-release-status": "staging-preview"
       }
     },
     "/api/developer/v1/merchants/{merchantId}/appointments/{appointmentId}/": {
@@ -1286,6 +1322,11 @@
         "security": [
           {
             "merchantBearer": []
+          },
+          {
+            "developerOAuth": [
+              "appointments:read"
+            ]
           }
         ],
         "parameters": [
@@ -1460,7 +1501,8 @@
               }
             }
           }
-        }
+        },
+        "x-oauth-release-status": "staging-preview"
       }
     },
     "/api/developer/v1/merchants/{merchantId}/appointments/{appointmentId}/reschedule/": {
@@ -1472,6 +1514,11 @@
         "security": [
           {
             "merchantBearer": []
+          },
+          {
+            "developerOAuth": [
+              "appointments:reschedule"
+            ]
           }
         ],
         "parameters": [
@@ -1690,7 +1737,8 @@
               }
             }
           }
-        }
+        },
+        "x-oauth-release-status": "staging-preview"
       }
     },
     "/api/developer/v1/merchants/{merchantId}/appointments/{appointmentId}/cancel/": {
@@ -1702,6 +1750,11 @@
         "security": [
           {
             "merchantBearer": []
+          },
+          {
+            "developerOAuth": [
+              "appointments:cancel"
+            ]
           }
         ],
         "parameters": [
@@ -1912,7 +1965,8 @@
               }
             }
           }
-        }
+        },
+        "x-oauth-release-status": "staging-preview"
       }
     },
     "/api/developer/v1/merchants/{merchantId}/appointments/{appointmentId}/payments/": {
@@ -1924,6 +1978,11 @@
         "security": [
           {
             "merchantBearer": []
+          },
+          {
+            "developerOAuth": [
+              "payments:read"
+            ]
           }
         ],
         "parameters": [
@@ -2098,7 +2157,8 @@
               }
             }
           }
-        }
+        },
+        "x-oauth-release-status": "staging-preview"
       }
     },
     "/api/developer/v1/merchants/{merchantId}/appointments/{appointmentId}/checkout/": {
@@ -2110,6 +2170,11 @@
         "security": [
           {
             "merchantBearer": []
+          },
+          {
+            "developerOAuth": [
+              "payments:create"
+            ]
           }
         ],
         "parameters": [
@@ -2338,7 +2403,8 @@
               }
             }
           }
-        }
+        },
+        "x-oauth-release-status": "staging-preview"
       }
     },
     "/api/developer/v1/merchants/{merchantId}/appointments/{appointmentId}/reminders/": {
@@ -2350,6 +2416,11 @@
         "security": [
           {
             "merchantBearer": []
+          },
+          {
+            "developerOAuth": [
+              "appointments:read"
+            ]
           }
         ],
         "parameters": [
@@ -2576,7 +2647,8 @@
               }
             }
           }
-        }
+        },
+        "x-oauth-release-status": "staging-preview"
       },
       "post": {
         "operationId": "sendReminder",
@@ -2586,6 +2658,11 @@
         "security": [
           {
             "merchantBearer": []
+          },
+          {
+            "developerOAuth": [
+              "reminders:send"
+            ]
           }
         ],
         "parameters": [
@@ -2793,7 +2870,8 @@
               }
             }
           }
-        }
+        },
+        "x-oauth-release-status": "staging-preview"
       }
     },
     "/api/developer/v1/merchants/{merchantId}/payments/setup/": {
@@ -2805,6 +2883,11 @@
         "security": [
           {
             "merchantBearer": []
+          },
+          {
+            "developerOAuth": [
+              "payments:read"
+            ]
           }
         ],
         "parameters": [
@@ -2980,7 +3063,8 @@
               }
             }
           }
-        }
+        },
+        "x-oauth-release-status": "staging-preview"
       }
     },
     "/api/developer/v1/merchants/{merchantId}/services/{serviceId}/": {
@@ -2992,6 +3076,11 @@
         "security": [
           {
             "merchantBearer": []
+          },
+          {
+            "developerOAuth": [
+              "merchant:services:write"
+            ]
           }
         ],
         "parameters": [
@@ -3195,7 +3284,8 @@
               }
             }
           }
-        }
+        },
+        "x-oauth-release-status": "staging-preview"
       }
     },
     "/api/developer/v1/merchants/{merchantId}/staff/{staffId}/": {
@@ -3207,6 +3297,11 @@
         "security": [
           {
             "merchantBearer": []
+          },
+          {
+            "developerOAuth": [
+              "merchant:staff:write"
+            ]
           }
         ],
         "parameters": [
@@ -3410,7 +3505,8 @@
               }
             }
           }
-        }
+        },
+        "x-oauth-release-status": "staging-preview"
       }
     }
   },
@@ -3419,7 +3515,31 @@
       "merchantBearer": {
         "type": "http",
         "scheme": "bearer",
-        "description": "Keep merchant-issued token server-side; one explicit merchant/location grant. Not OAuth."
+        "description": "Keep merchant-issued token server-side; one explicit merchant/location grant. Production direct credentials; OAuth tokens for the exact API resource are supported in staging preview."
+      },
+      "developerOAuth": {
+        "type": "oauth2",
+        "x-release-status": "staging-preview",
+        "flows": {
+          "authorizationCode": {
+            "authorizationUrl": "https://www.magibooking.com/api/developer/oauth/authorize/",
+            "tokenUrl": "https://www.magibooking.com/api/developer/oauth/token/",
+            "scopes": {
+              "catalog:read": "catalog:read",
+              "merchant:services:write": "merchant:services:write",
+              "merchant:staff:write": "merchant:staff:write",
+              "availability:read": "availability:read",
+              "appointments:create": "appointments:create",
+              "appointments:read": "appointments:read",
+              "appointments:reschedule": "appointments:reschedule",
+              "appointments:cancel": "appointments:cancel",
+              "payments:read": "payments:read",
+              "payments:create": "payments:create",
+              "reminders:send": "reminders:send",
+              "merchant:payment-rules:write": "Edit shared merchant deposit and payment rules (separate explicit consent)"
+            }
+          }
+        }
       }
     },
     "schemas": {

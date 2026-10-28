@@ -1,0 +1,9 @@
+# MagiBooking MCP source adapter
+
+Prefer native Streamable HTTP at the merchant-approved staging origin `/api/developer/mcp/`. The hosted server advertises its authorization server via protected-resource metadata. OAuth requires a preregistered public client and S256 PKCE; MCP tokens are audience-bound and cannot call the REST API.
+
+This optional source-only stdio bridge uses the official MCP SDK. Install dependencies in this directory, set `MAGI_MCP_ORIGIN` to the approved HTTPS staging origin and `MAGI_MCP_ACCESS_TOKEN` to an MCP-audience OAuth token, then run `npm start`. It forwards tool discovery/calls to the hosted server; no cloud business logic is included. Do not put tokens in command arguments or shared config. It does not automate browser consent or refresh tokens. Tokens expire within one hour; reauthorize when needed.
+
+Read tools are available only with their granted scopes. Appointment creation/reschedule/cancel additionally require explicit merchant permission and the staging write flag. Capture customer confirmation before mutations and persist operation keys; do not generate a fresh key after a timeout. Merchant policy/version/conflict checks apply in the shared service.
+
+Not yet published to npm. The hosted OAuth/MCP flow passed isolated staging verification with the official MCP client and two browser engines. This optional stdio bridge is source-only; its configuration guards are tested, but a positive end-to-end connection from a real third-party desktop client is not yet claimed. Production remains unchanged.

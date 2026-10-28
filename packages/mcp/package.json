@@ -1,0 +1,1 @@
+{"name":"@magibooking/mcp-source-adapter","version":"0.3.0-preview.1","private":true,"type":"module","license":"MIT","dependencies":{"@modelcontextprotocol/sdk":"1.32.2"},"scripts":{"start":"node stdio.mjs"},"engines":{"node":">=22"}}

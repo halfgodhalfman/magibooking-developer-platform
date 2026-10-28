@@ -1,12 +1,12 @@
 {
   "name": "magibooking-developer-platform",
-  "version": "0.2.0-preview.1",
+  "version": "0.3.0-preview.1",
   "private": true,
   "type": "module",
   "scripts": {
     "start": "node sandbox/server.mjs",
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check sandbox/server.mjs && node --check packages/javascript/index.mjs && node --check packages/embed/index.mjs && python3 -m py_compile packages/python/magibooking/__init__.py scripts/build-cloud-contract.py",
+    "check": "node --check sandbox/server.mjs && node --check packages/javascript/index.mjs && node --check packages/embed/index.mjs && python3 -m py_compile packages/python/magibooking/__init__.py scripts/build-cloud-contract.py && node --check packages/mcp/stdio.mjs",
     "contract:build": "python3 scripts/build-cloud-contract.py",
     "export:public": "python3 scripts/export-public.py"
   },

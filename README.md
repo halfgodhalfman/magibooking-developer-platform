@@ -6,7 +6,7 @@ Add scheduling, appointment reminders, and merchant-controlled payments to your 
 
 This public preview contains JavaScript and Python SDKs, OpenAPI, a booking-button component, and examples. Core scheduling, merchant/customer data, authorization, subscription/quotas, messaging providers and payments run privately in MagiBooking Cloud.
 
-**Availability:** basic cloud catalog, availability, appointment creation/read and `appointment.created` notifications are in production for approved integrations. Reschedule/cancel, merchant configuration, developer payments and reminders passed staging verification and remain preview. Third-party OAuth/MCP and self-service developer enrollment are upcoming. Package registry releases are separate from this GitHub source preview.
+**Availability:** basic cloud catalog, availability, appointment creation/read and `appointment.created` notifications are in production for approved integrations. Reschedule/cancel, merchant configuration, developer payments and reminders passed staging verification and remain preview. Third-party OAuth and MCP are available as a separately verified staging preview; self-service developer enrollment is upcoming. Package registry releases are separate from this GitHub source preview.
 
 - [Cloud quickstart](docs/QUICKSTART.md)
 - [Cloud OpenAPI](openapi/cloud.openapi.json) — per-operation release status
@@ -14,13 +14,15 @@ This public preview contains JavaScript and Python SDKs, OpenAPI, a booking-butt
 - [JavaScript SDK](packages/javascript/)
 - [Python SDK](packages/python/)
 - [Booking-button component](packages/embed/)
+- [OAuth and MCP staging preview](docs/OAUTH-MCP.md)
 - [Security](SECURITY.md) · [MIT license](LICENSE)
 
 ## Run locally
 
-Node 22+ and Python 3.10+ are required. No npm dependencies are needed for the SDK test suite.
+Node 22+ and Python 3.10+ are required. The JS/Python clients have no runtime dependencies. The optional MCP bridge uses the official MCP SDK.
 
 ```sh
+npm ci --ignore-scripts --prefix packages/mcp
 npm test
 npm run check
 npm start
