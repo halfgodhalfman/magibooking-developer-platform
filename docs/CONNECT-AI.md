@@ -106,6 +106,31 @@ In the merchant console, choose **Authorizations**, locate the exact application
 
 To revoke only a helper token and remove its local credential file, run `node examples/ai-clients/revoke.mjs mcp` (or `api`) with the corresponding `MAGI_AI_TOKEN_FILE`. This token-level action does **not** stop other tokens or grant-bound Webhooks; full grant revocation is done in the merchant console. Expired credential files can be removed locally after confirming the grant state there.
 
+## 3D. Codex: native remote MCP with a preregistered client
+
+For the tested Codex CLI version, add this to your local Codex configuration, replacing the application ID. Preregister the exact literal callback path shown by the client; the tested path was `/callback`.
+
+```toml
+[mcp_servers.magibooking-staging]
+url = "https://staging.magibooking.com/api/developer/mcp/"
+
+[mcp_servers.magibooking-staging.oauth]
+client_id = "YOUR_PREREGISTERED_APPLICATION_ID"
+callback_url = "http://127.0.0.1/callback"
+```
+
+Then request explicit read scopes:
+
+```sh
+codex mcp login magibooking-staging --scopes catalog:read,availability:read,appointments:read
+```
+
+Complete merchant login and consent yourself. For a machine without a browser, the tested CLI supports `--no-browser` and accepts the complete callback URL through hidden local input. Treat that URL as a short-lived secret; do not paste it into chat, issues or logs.
+
+Do not also set `oauth_resource` / `--oauth-resource` in the tested CLI: it already learns the resource from discovery, and an explicit override produced duplicate `resource` parameters. MagiBooking rejects duplicate authorization parameters. Keep the trailing slash in the server URL and do not weaken server validation.
+
+Ask Codex to list services and staff first. Booking writes require an application registered for the three appointment write scopes, fresh merchant consent and customer confirmation. They are not enabled by this read-only example. Revoke the grant in the staging merchant console and verify subsequent calls fail without silently reconnecting.
+
 ## Troubleshooting and verification status
 
 | Symptom | Next step |
