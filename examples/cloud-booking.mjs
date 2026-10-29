@@ -9,5 +9,6 @@ if(process.env.MAGI_CREATE_TEST_BOOKING==='true'){
  if(!process.env.MAGI_IDEMPOTENCY_KEY)throw Error('Persist a stable key before running');
  const result=await api.createAppointment(body,process.env.MAGI_IDEMPOTENCY_KEY);
  console.log({appointmentId:result.appointment.id,status:result.appointment.status});
- console.log(await api.payments(result.appointment.id));
+ // Payment reads need payments:read and an eligible merchant plan; sandbox booking is sufficient by default.
+ if(process.env.MAGI_QUERY_PAYMENT_STATUS==='true')console.log(await api.payments(result.appointment.id));
 }

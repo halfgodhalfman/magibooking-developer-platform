@@ -1,0 +1,15 @@
+import{request as httpRequest}from'node:http';import test from'node:test';import assert from'node:assert/strict';import{spawn}from'node:child_process';import{mkdtemp,writeFile,rm}from'node:fs/promises';import{tmpdir}from'node:os';import{join}from'node:path';import{once}from'node:events';
+test('desktop pilot enforces loopback host, local session, Origin and OAuth state/issuer before exchange',async t=>{
+ const dir=await mkdtemp(join(tmpdir(),'magi-desktop-'));const config=join(dir,'config.private.json');await writeFile(config,JSON.stringify({clientId:'test_client',merchantId:'test_merchant',receiverUrl:'https://staging.magibooking.com/staging-test-receiver/',receiverReadToken:'test_read_capability_placeholder'}));
+ const child=spawn(process.execPath,['examples/desktop-pilot/server.mjs'],{env:{...process.env,MAGI_PILOT_CONFIG:config,MAGI_PILOT_PORT:'0'}});t.after(async()=>{if(child.exitCode===null){child.kill();await once(child,'exit');}await rm(dir,{recursive:true,force:true});});
+ const [started]=await Promise.race([once(child.stdout,'data'),once(child,'exit').then(()=>{throw Error('Pilot server did not start; check loopback port4332');})]);
+ const origin=/http:\/\/127\.0\.0\.1:\d+/.exec(started.toString())[0];const hostStatus=await new Promise((resolve,reject)=>{const q=httpRequest(origin+'/',{headers:{Host:'attacker.example'}},r=>{r.resume();resolve(r.statusCode)});q.on('error',reject);q.end()});assert.equal(hostStatus,403);let r;
+ r=await fetch(origin+'/api/services');assert.equal(r.status,401);
+ r=await fetch(origin+'/');assert.equal(r.status,200);assert.match(r.headers.get('set-cookie'),/HttpOnly; SameSite=Lax/);const cookie=r.headers.get('set-cookie').split(';')[0];assert(!(await r.text()).includes('test_read_capability_placeholder'));
+ r=await fetch(origin+'/pilot-config.private.json');assert.equal(r.status,404);
+ r=await fetch(origin+'/oauth/start',{method:'POST',headers:{Cookie:cookie,Origin:'https://attacker.example'},redirect:'manual'});assert.equal(r.status,403);
+ r=await fetch(origin+'/oauth/start',{method:'POST',headers:{Cookie:cookie,Origin:origin},redirect:'manual'});assert.equal(r.status,200);const url=new URL((await r.json()).authorizationUrl);assert.equal(url.origin,'https://staging.magibooking.com');assert.equal(url.searchParams.get('redirect_uri'),origin+'/callback');assert.equal(url.searchParams.get('code_challenge_method'),'S256');assert(url.searchParams.get('state').length>=32);
+ const query=new URLSearchParams({state:'wrong_state',iss:'https://staging.magibooking.com',code:'a'.repeat(64)});r=await fetch(origin+'/callback?'+query,{headers:{Cookie:cookie}});assert.equal(r.status,400);
+ query.set('state',url.searchParams.get('state'));query.set('iss','https://attacker.example');r=await fetch(origin+'/callback?'+query,{headers:{Cookie:cookie}});assert.equal(r.status,400);
+ query.set('iss','https://staging.magibooking.com');query.set('error','access_denied');r=await fetch(origin+'/callback?'+query,{headers:{Cookie:cookie}});assert.equal(r.status,400);assert.equal((await r.json()).error.code,'AUTHORIZATION_DECLINED');
+});

@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "magibooking-production": {
+      "command": "node",
+      "args": ["/REPLACE_WITH_CHECKOUT/packages/mcp/stdio.mjs"],
+      "env": {
+        "MAGI_AI_ENVIRONMENT": "production",
+        "MAGI_MCP_ORIGIN": "https://www.magibooking.com",
+        "MAGI_AI_TOKEN_FILE": "/REPLACE_WITH_PRIVATE_DIRECTORY/production-mcp.private.json"
+      }
+    }
+  }
+}

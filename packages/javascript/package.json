@@ -1,1 +1,29 @@
-{"name":"@magibooking/sdk","version":"0.2.0-preview.1","type":"module","description":"Server-side MagiBooking cloud API client","license":"MIT","engines":{"node":">=22"},"exports":{".":{"types":"./index.d.ts","default":"./index.mjs"},"./webhooks":"./webhooks.mjs","./sandbox":"./sandbox.mjs"},"files":["index.mjs","index.d.ts","webhooks.mjs","sandbox.mjs","README.md","LICENSE"],"publishConfig":{"access":"public"}}
+{
+  "name": "@magibooking/sdk",
+  "version": "0.4.0-rc.1",
+  "type": "module",
+  "description": "Server-side MagiBooking cloud API client",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.mjs"
+    },
+    "./webhooks": "./webhooks.mjs",
+    "./sandbox": "./sandbox.mjs"
+  },
+  "files": [
+    "index.mjs",
+    "index.d.ts",
+    "webhooks.mjs",
+    "sandbox.mjs",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

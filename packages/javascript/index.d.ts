@@ -4,9 +4,11 @@ export interface AppointmentResponse {appointment:Appointment;payment?:{effect_i
 export interface NewClient {name:string;phone:string;email?:string|null}
 export type CreateAppointment = {service_id:string;staff_id:string;location_id?:string;start_at:string} & ({client_id:string;new_client?:never}|{new_client:NewClient;client_id?:never});
 export interface ServiceWrite {name?:string;price?:string;duration_minutes?:number;buffer_before_minutes?:number;buffer_after_minutes?:number;allow_online_booking?:boolean;payment_mode?:'BOOK_ONLY'|'FULL_PAYMENT'|'DEPOSIT_FIXED'|'DEPOSIT_PERCENT';deposit_amount?:string;deposit_percent?:string}
-export interface Service {id:string;name:string;price:string;currency:string;duration_minutes:number;payment_mode:string;deposit_amount:string|null;deposit_percent:string|null;updated_at:string}
+export interface Service {id:string;name:string;price:string;currency:string;duration_minutes:number;payment_mode:string;deposit_amount?:string|null;deposit_percent?:string|null;updated_at?:string}
+export interface VersionedService extends Service {deposit_amount:string|null;deposit_percent:string|null;updated_at:string;allow_online_booking:boolean}
 export interface StaffWrite {name?:string;title?:string|null;allow_client_booking?:boolean;service_ids?:string[];schedules?:{weekday:number;start_time:string;end_time:string}[]}
-export interface Staff {id:string;name:string;title:string|null;updated_at:string}
+export interface Staff {id:string;name:string;title:string|null;updated_at?:string}
+export interface VersionedStaff extends Staff {updated_at:string;allow_client_booking:boolean}
 export interface EffectResponse {effect:{id:string;status:string}|null}
 export interface PaymentResponse {amount:string|null;currency:string|null;payment_status:string;checkout_state:string;checkout_url:string|null;expires_at:string|null;merchant_setup_url:string}
 export class MagiBookingError extends Error {code:string;status?:number;requestId?:string;constructor(code:string,options?:{status?:number;requestId?:string})}
@@ -24,9 +26,9 @@ export class MagiBooking {
  reminders(id:string):Promise<{data:{id:string;kind:'EMAIL'|'SMS';status:string;attempts:number;errorCode:string|null;nextAttemptAt:string|null}[]}>;
  sendReminder(id:string,channel:'email'|'sms',key:string):Promise<EffectResponse>;
  paymentSetup():Promise<{merchant_setup_url:string}>;
- createService(body:ServiceWrite & {name:string;price:string;duration_minutes:number},key:string):Promise<{service:Service & {allow_online_booking:boolean}}>;
- updateService(id:string,body:ServiceWrite,options:VersionedWrite):Promise<{service:Service & {allow_online_booking:boolean}}>;
- createStaff(body:StaffWrite & {name:string},key:string):Promise<{staff:Staff & {allow_client_booking:boolean}}>;
- updateStaff(id:string,body:StaffWrite,options:VersionedWrite):Promise<{staff:Staff & {allow_client_booking:boolean}}>;
+ createService(body:ServiceWrite & {name:string;price:string;duration_minutes:number},key:string):Promise<{service:VersionedService}>;
+ updateService(id:string,body:ServiceWrite,options:VersionedWrite):Promise<{service:VersionedService}>;
+ createStaff(body:StaffWrite & {name:string},key:string):Promise<{staff:VersionedStaff}>;
+ updateStaff(id:string,body:StaffWrite,options:VersionedWrite):Promise<{staff:VersionedStaff}>;
  request(path:string,options?:{method?:string;body?:unknown;idempotencyKey?:string;ifMatch?:string;query?:Record<string,string>}):Promise<unknown>;
 }

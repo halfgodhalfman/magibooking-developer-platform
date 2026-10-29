@@ -6,11 +6,19 @@ Add scheduling, appointment reminders, and merchant-controlled payments to your 
 
 This public preview contains JavaScript and Python SDKs, OpenAPI, a booking-button component, and examples. Core scheduling, merchant/customer data, authorization, subscription/quotas, messaging providers and payments run privately in MagiBooking Cloud.
 
-**Availability:** basic cloud catalog, availability, appointment creation/read and `appointment.created` notifications are in production for approved integrations. Reschedule/cancel, merchant configuration, developer payments and reminders passed staging verification and remain preview. Third-party OAuth and MCP are available as a separately verified staging preview; self-service developer enrollment is upcoming. Package registry releases are separate from this GitHub source preview.
+**Availability:** basic cloud catalog, availability, appointment creation/read and `appointment.created` notifications are in production for approved integrations. Reschedule/cancel, merchant configuration, developer payments and reminders passed staging verification and remain preview. Third-party OAuth and MCP are available as a separately verified staging preview; self-service sandbox and API billing are available in staging, with controlled partner enrollment; production enrollment remains restricted. Package registry releases are separate from this GitHub source preview.
 
+- [Connect your AI assistant](docs/CONNECT-AI.md) — OAuth helper, Claude Code bridge, OpenAI MCP and DeepSeek Tool Calls examples
+- [Explicit production connection profile](docs/PRODUCTION-CONNECTION.md) — configuration support, subject to cloud release and acceptance
+- [Public release checklist](docs/PUBLIC-RELEASE-CHECKLIST.md) — source, cloud, client compatibility and publication gates
+- [API pricing](docs/API-PRICING.md) — approved commercial policy; live billing not enabled
+- [Independent staging pilot](docs/INDEPENDENT-PILOT.md)
+- [Desktop OAuth pilot](examples/desktop-pilot/) — local callback, server-side credential, synthetic bookings
+- [Cloud API website demo](examples/cloud-website/) — synthetic bookings, server-side token
 - [Cloud quickstart](docs/QUICKSTART.md)
 - [Cloud OpenAPI](openapi/cloud.openapi.json) — per-operation release status
 - [Webhook contract](openapi/webhooks.json)
+- [Automatic staging delivery](docs/WEBHOOK-AUTOMATIC-STAGING.md) — retries, durable deduplication and grant revocation
 - [JavaScript SDK](packages/javascript/)
 - [Python SDK](packages/python/)
 - [Booking-button component](packages/embed/)

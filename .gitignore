@@ -12,3 +12,7 @@ coverage/
 .stage3-audit/
 dist/
 *.egg-info/
+
+# Local integration credentials and receiver journals
+*.private.json
+webhook-events/

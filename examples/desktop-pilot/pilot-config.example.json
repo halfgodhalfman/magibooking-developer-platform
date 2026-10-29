@@ -1,0 +1,6 @@
+{
+  "clientId": "your_staging_oauth_client_id",
+  "merchantId": "your_sandbox_merchant_id",
+  "receiverUrl": "https://your-webhook.example/",
+  "receiverReadToken": "replace_with_receiver_read_capability"
+}

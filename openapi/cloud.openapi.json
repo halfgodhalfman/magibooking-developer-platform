@@ -7,6 +7,10 @@
   },
   "servers": [
     {
+      "url": "https://staging.magibooking.com",
+      "description": "Staging preview: isolated test merchants and test data only."
+    },
+    {
       "url": "https://www.magibooking.com",
       "description": "Production: use only operations marked production; base appointment creation is available but paid preview is not."
     }
@@ -626,8 +630,7 @@
                         "required": [
                           "id",
                           "name",
-                          "title",
-                          "updated_at"
+                          "title"
                         ],
                         "additionalProperties": false
                       }
@@ -1115,7 +1118,7 @@
         "operationId": "createAppointment",
         "summary": "createAppointment",
         "x-required-scope": "appointments:create",
-        "x-release-status": "staging-preview",
+        "x-release-status": "production",
         "security": [
           {
             "merchantBearer": []
@@ -1310,6 +1313,10 @@
             }
           }
         },
+        "description": "Production supports basic BOOK_ONLY appointments. Payment-required bookings and asynchronous payment preparation remain staging preview and require separate payment permissions. Preserve the original key and exact request after an unknown outcome.",
+        "x-preview-features": [
+          "payment-required bookings and asynchronous payment preparation"
+        ],
         "x-oauth-release-status": "staging-preview"
       }
     },
@@ -3522,8 +3529,8 @@
         "x-release-status": "staging-preview",
         "flows": {
           "authorizationCode": {
-            "authorizationUrl": "https://www.magibooking.com/api/developer/oauth/authorize/",
-            "tokenUrl": "https://www.magibooking.com/api/developer/oauth/token/",
+            "authorizationUrl": "https://staging.magibooking.com/api/developer/oauth/authorize/",
+            "tokenUrl": "https://staging.magibooking.com/api/developer/oauth/token/",
             "scopes": {
               "catalog:read": "catalog:read",
               "merchant:services:write": "merchant:services:write",
@@ -3695,10 +3702,7 @@
           "price",
           "currency",
           "duration_minutes",
-          "payment_mode",
-          "deposit_amount",
-          "deposit_percent",
-          "updated_at"
+          "payment_mode"
         ],
         "additionalProperties": false
       },
