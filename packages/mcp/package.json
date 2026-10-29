@@ -1,1 +1,16 @@
-{"name":"@magibooking/mcp-source-adapter","version":"0.3.0-preview.1","private":true,"type":"module","license":"MIT","dependencies":{"@modelcontextprotocol/sdk":"1.32.2"},"scripts":{"start":"node stdio.mjs"},"engines":{"node":">=22"}}
+{
+  "name": "@magibooking/mcp-source-adapter",
+  "version": "0.4.0-rc.2",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.32.2"
+  },
+  "scripts": {
+    "start": "node stdio.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

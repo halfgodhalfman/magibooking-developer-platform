@@ -4,10 +4,10 @@ from pathlib import Path
 root=Path(__file__).resolve().parent.parent
 out=Path(sys.argv[1]).resolve() if len(sys.argv)>1 else root/'dist/public'
 if out.exists():raise SystemExit('Choose a new output directory; no overwrites')
-files=['LICENSE','SECURITY.md','package.json','.gitignore','docs/QUICKSTART.md','docs/PUBLIC-README.md','docs/OAUTH-MCP.md','.github/workflows/ci.yml']
+files=['LICENSE','SECURITY.md','package.json','.gitignore','docs/QUICKSTART.md','docs/API-PRICING.md', 'docs/INDEPENDENT-PILOT.md','docs/WEBHOOK-AUTOMATIC-STAGING.md','docs/PUBLIC-README.md','docs/OAUTH-MCP.md','docs/CONNECT-AI.md','docs/PRODUCTION-CONNECTION.md','docs/PUBLIC-RELEASE-CHECKLIST.md','.github/workflows/ci.yml']
 for directory in ['packages','openapi','examples','sandbox','tests','scripts']:
- files += [str(p.relative_to(root)) for p in (root/directory).rglob('*') if p.is_file() and not any(x in p.parts for x in ['__pycache__','build','dist','node_modules']) and p.suffix not in ['.pyc','.tgz'] and not any(x.endswith('.egg-info') for x in p.parts)]
-files=sorted(set(files));patterns=[r'(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{16,}',r'whsec_[A-Za-z0-9]{20,}',r'gh[pousr]_[A-Za-z0-9]{20,}',r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----',r'AKIA[0-9A-Z]{16}',r'/'+'Users/'+r'[^\s]+',r'/'+'var/www/'+r'[^\s]+',r'acct_[A-Za-z0-9]{12,}']
+ files += [str(p.relative_to(root)) for p in (root/directory).rglob('*') if p.is_file() and not any(x in p.parts for x in ['__pycache__','build','dist','node_modules']) and p.suffix not in ['.pyc','.tgz'] and not p.name.endswith('.private.json') and 'webhook-events' not in p.parts and not any(x.endswith('.egg-info') for x in p.parts)]
+files=sorted(set(files));patterns=[r'mb_(?:test|live|oauth|whsec)_[a-f0-9]{64}',r'(?:sk|rk)_(?:live|test)_[A-Za-z0-9]{16,}',r'whsec_[A-Za-z0-9]{20,}',r'gh[pousr]_[A-Za-z0-9]{20,}',r'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----',r'AKIA[0-9A-Z]{16}',r'/'+'Users/'+r'[^\s]+',r'/'+'var/www/'+r'[^\s]+',r'acct_[A-Za-z0-9]{12,}']
 def scan(name,raw):
  text=raw.decode('utf8')
  if any(re.search(pattern,text) for pattern in patterns):raise SystemExit('Sensitive-pattern review required: '+name)

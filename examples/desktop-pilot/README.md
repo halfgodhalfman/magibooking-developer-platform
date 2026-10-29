@@ -1,0 +1,7 @@
+# Desktop staging pilot
+
+Copy `pilot-config.example.json` to `pilot-config.private.json` beside the server and fill it with your approved staging application/sandbox and receiver settings (or have your staging operator provide it). Protect the private file with mode0600, then start with `node examples/desktop-pilot/server.mjs`. It contains the staging client ID, sandbox merchant ID, receiver URL and receiver read capability; never publish that file. By default, only the loopback address `http://127.0.0.1:4332/` is served.
+
+Click Connect, sign into staging and explicitly authorize Developer sandbox and the six booking scopes. Credentials and PKCE values stay in the Node process memory and expire after at most one hour; restart requires reconnecting. The session cookie is HttpOnly/SameSite=Lax, and POSTs enforce the exact loopback Origin. No payment or reminder permission is requested.
+
+The HTTPS Webhook receiver must be bound to the exact OAuth grant after consent, using the merchant management flow. Receiver availability alone does not establish binding or delivery. The configured MagiBooking staging environment now has a dedicated automatic worker; retry deadlines persist across worker restarts. The read capability never reaches the browser. Do not count operator-assisted application/endpoint setup as independent self-service onboarding. To stop, disconnect and close the terminal. Pending booking keys remain in the same browser session, so resolve unknown outcomes before reconnecting or starting another write.

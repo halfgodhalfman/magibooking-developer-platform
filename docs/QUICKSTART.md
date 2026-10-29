@@ -66,6 +66,24 @@ SDK errors include code/status/request ID (`requestId` in JS, `request_id` in Py
 
 Run `python3 -m http.server 4330 --bind 127.0.0.1` from the repository and open `/examples/website/`. Enter a real merchant's public booking slug. The button opens the merchant-controlled booking flow and payment page. No API token reaches the browser. The current website prevents cross-origin iframes; this package deliberately uses a booking-button component. Full inline booking and scoped browser sessions remain future work.
 
+## Staging API website demo
+
+`examples/cloud-website/` exercises the cloud API from a local server. It is separate from the public booking-button example above. Use only a staging sandbox credential with catalog, availability and appointment read/create/reschedule/cancel scopes:
+
+```sh
+export MAGI_API_ORIGIN=https://staging.magibooking.com
+# Set MAGI_API_TOKEN and MAGI_MERCHANT_ID securely in your server environment.
+node examples/cloud-website/server.mjs
+```
+
+Open `http://127.0.0.1:4331/`. Select a compatible service, staff member and returned available slot, then create, reschedule and cancel the synthetic booking. The demo accepts only its synthetic customer identity and never starts payments or reminders. API credentials remain on the server. A pending write retains its operation key, exact body and version across refresh; resolve an uncertain result before starting another operation. The CLI `examples/cloud-booking.mjs` queries payment status only when `MAGI_QUERY_PAYMENT_STATUS=true` and the credential has the required payment scope.
+
+The published SDKs were exercised against staging; additions in your checkout may be newer than the published GitHub preview. See [pricing](API-PRICING.md) and [independent pilot](INDEPENDENT-PILOT.md).
+
 ## Webhooks
 
 Configure endpoints in the merchant console. Verify the exact body bytes, signature and timestamp before parsing. Use a durable inbox keyed by event ID, acknowledge only after saving, and process asynchronously. Delivery is at least once and can be out of order. See [webhook contract](../openapi/webhooks.json) and `examples/webhook-receiver/`. JS exports `verifyMagiBookingWebhook`; Python exports `verify_webhook` (its optional `now` uses Unix seconds; JS uses milliseconds). Payment events do not contain customer data or payment credentials.
+
+## Assisted desktop OAuth pilot
+
+For a staging merchant who wants a browser-based test application on their own computer, see `examples/desktop-pilot/`. It supports a loopback OAuth callback with mandatory PKCE/state/issuer checks, server-only in-memory tokens and synthetic booking actions. A protected local config and a separately provisioned signed receiver are required. Application registration and endpoint binding can still require operator assistance. The configured MagiBooking staging deployment now delivers automatically through a separate durable worker; do not count assisted setup as independent self-service acceptance.

@@ -18,6 +18,7 @@ jobs:
       - run: npm run check
       - run: SDK_CAPTURE_DIR=.stage3-audit/captures npm test
       - run: python scripts/validate-contract.py .stage3-audit/captures
+      - run: python tests/cloud_contract_responses.py
       - run: npm run contract:build && git diff --exit-code -- openapi/cloud.openapi.json
       - run: npm pack ./packages/javascript --dry-run && npm pack ./packages/embed --dry-run
       - run: python -m build packages/python --outdir dist/python
